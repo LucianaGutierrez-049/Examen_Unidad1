@@ -2,6 +2,7 @@ package pe.upeu.andinasalud.presentation.citas
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -14,18 +15,20 @@ class CitasViewModel(private val obtener: ObtenerCitasUseCase) : ViewModel() {
     private val _uiState = MutableStateFlow(CitasUiState())
     val uiState: StateFlow<CitasUiState> = _uiState
     private var todas = emptyList<Cita>()
-    init { cargar() }
-
     fun cargar() = viewModelScope.launch {
         _uiState.value = _uiState.value.copy(carga = LoadState.Cargando)
-        runCatching { obtener() }.onSuccess { todas = it; filtrar() }
-            .onFailure { _uiState.value = _uiState.value.copy(carga = LoadState.Error(it.message ?: "No se pudieron cargar las citas")) }
+        runCatching { obtener() }.onSuccess { todas = it; filtrar(forzar = true) }
+            .onFailure {
+                if (it is CancellationException) throw it
+                _uiState.value = _uiState.value.copy(carga = LoadState.Error(it.message ?: "No se pudieron cargar las citas"))
+            }
     }
     fun buscar(texto: String) { _uiState.value = _uiState.value.copy(busqueda = texto); filtrar() }
     fun seleccionarFiltro(filtro: FiltroEstado) { _uiState.value = _uiState.value.copy(filtro = filtro); filtrar() }
 
-    private fun filtrar() {
+    private fun filtrar(forzar: Boolean = false) {
         val estado = _uiState.value
+        if (!forzar && (estado.carga is LoadState.Cargando || estado.carga is LoadState.Error)) return
         val consulta = normalizar(estado.busqueda.trim())
         val resultado = todas.filter { cita ->
             (when (estado.filtro) {

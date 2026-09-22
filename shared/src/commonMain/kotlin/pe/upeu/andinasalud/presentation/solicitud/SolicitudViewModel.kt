@@ -2,6 +2,7 @@ package pe.upeu.andinasalud.presentation.solicitud
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,7 +20,6 @@ import pe.upeu.andinasalud.presentation.common.LoadState
 class SolicitudViewModel(private val repository: CitaRepository, private val solicitar: SolicitarCitaUseCase) : ViewModel() {
     private val _uiState = MutableStateFlow(SolicitudUiState())
     val uiState: StateFlow<SolicitudUiState> = _uiState
-    init { cargar() }
     fun reiniciar() { _uiState.value = SolicitudUiState(); cargar() }
     fun cargar() = viewModelScope.launch {
         _uiState.value = _uiState.value.copy(carga = LoadState.Cargando)
@@ -29,7 +29,10 @@ class SolicitudViewModel(private val repository: CitaRepository, private val sol
         }.onSuccess { (especialidades, sedes) ->
             _uiState.value = _uiState.value.copy(especialidades = especialidades, sedes = sedes,
                 carga = if (especialidades.isEmpty() || sedes.isEmpty()) LoadState.Vacio else LoadState.Contenido(Unit))
-        }.onFailure { _uiState.value = _uiState.value.copy(carga = LoadState.Error(it.message ?: "No se pudo cargar el formulario")) }
+        }.onFailure {
+            if (it is CancellationException) throw it
+            _uiState.value = _uiState.value.copy(carga = LoadState.Error(it.message ?: "No se pudo cargar el formulario"))
+        }
     }
     fun especialidad(valor: String) { _uiState.value = _uiState.value.copy(especialidad = valor, errores = _uiState.value.errores.copy(especialidad = null)) }
     fun sede(valor: String) { _uiState.value = _uiState.value.copy(sedeId = valor, errores = _uiState.value.errores.copy(sede = null)) }
@@ -49,21 +52,32 @@ class SolicitudViewModel(private val repository: CitaRepository, private val sol
             motivo = if (actual.motivo.isBlank()) "Ingresa el motivo" else null,
         )
         if (errores != ErroresFormulario()) { _uiState.value = actual.copy(errores = errores); return@launch }
-        _uiState.value = actual.copy(guardando = true)
-        val paciente = repository.obtenerPaciente()
-        solicitar(NuevaCita(paciente.id, actual.especialidad, actual.sedeId, LocalDateTime(fecha!!, hora!!), actual.motivo))
+        _uiState.value = actual.copy(guardando = true, envioError = null)
+        val resultado = try {
+            val paciente = repository.obtenerPaciente()
+            solicitar(NuevaCita(paciente.id, actual.especialidad, actual.sedeId, LocalDateTime(fecha!!, hora!!), actual.motivo))
+        } catch (cancelada: CancellationException) {
+            throw cancelada
+        } catch (error: Exception) {
+            Result.failure(error)
+        }
+        resultado
             .onSuccess { _uiState.value = _uiState.value.copy(guardando = false, guardada = true) }
             .onFailure { ex ->
                 val mensaje = ex.message ?: "No se pudo solicitar la cita"
-                val previos = _uiState.value.errores
-                val nuevos = when ((ex as? SolicitudNoValida)?.campo) {
-                    CampoSolicitud.ESPECIALIDAD -> previos.copy(especialidad = mensaje)
-                    CampoSolicitud.SEDE -> previos.copy(sede = mensaje)
-                    CampoSolicitud.FECHA -> previos.copy(fecha = mensaje)
-                    CampoSolicitud.HORA -> previos.copy(hora = mensaje)
-                    else -> previos.copy(motivo = mensaje)
+                if (ex is SolicitudNoValida) {
+                    val previos = _uiState.value.errores
+                    val nuevos = when (ex.campo) {
+                        CampoSolicitud.ESPECIALIDAD -> previos.copy(especialidad = mensaje)
+                        CampoSolicitud.SEDE -> previos.copy(sede = mensaje)
+                        CampoSolicitud.FECHA -> previos.copy(fecha = mensaje)
+                        CampoSolicitud.HORA -> previos.copy(hora = mensaje)
+                        CampoSolicitud.MOTIVO -> previos.copy(motivo = mensaje)
+                    }
+                    _uiState.value = _uiState.value.copy(guardando = false, errores = nuevos)
+                } else {
+                    _uiState.value = _uiState.value.copy(guardando = false, envioError = mensaje)
                 }
-                _uiState.value = _uiState.value.copy(guardando = false, errores = nuevos)
             }
     }
 }

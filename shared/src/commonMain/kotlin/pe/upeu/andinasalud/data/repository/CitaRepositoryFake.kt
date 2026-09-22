@@ -7,15 +7,20 @@ import pe.upeu.andinasalud.data.local.CitasSimuladas
 import pe.upeu.andinasalud.domain.model.*
 import pe.upeu.andinasalud.domain.repository.CitaRepository
 
-class CitaRepositoryFake : CitaRepository {
+class CitaRepositoryFake(
+    citasIniciales: List<Cita> = CitasSimuladas.citasIniciales(),
+    private val falloLectura: Boolean = false,
+    private val retardoCargaMs: Long = 800,
+) : CitaRepository {
     private val mutex = Mutex()
-    private val citas = CitasSimuladas.citasIniciales().toMutableList()
-    override suspend fun obtenerPaciente(): Paciente = CitasSimuladas.paciente
-    override suspend fun obtenerSedes(): List<Sede> = CitasSimuladas.sedes
-    override suspend fun obtenerEspecialidades(): List<String> = CitasSimuladas.especialidades
-    override suspend fun obtenerMedicos(): List<Medico> = CitasSimuladas.medicos
-    override suspend fun obtenerCitas(): List<Cita> { delay(800); return mutex.withLock { citas.toList() } }
-    override suspend fun obtenerCita(id: String): Cita? { delay(800); return mutex.withLock { citas.firstOrNull { it.id == id } } }
+    private val citas = citasIniciales.toMutableList()
+    private fun comprobarLectura() { if (falloLectura) error("Error simulado de carga") }
+    override suspend fun obtenerPaciente(): Paciente { comprobarLectura(); return CitasSimuladas.paciente }
+    override suspend fun obtenerSedes(): List<Sede> { comprobarLectura(); return CitasSimuladas.sedes }
+    override suspend fun obtenerEspecialidades(): List<String> { comprobarLectura(); return CitasSimuladas.especialidades }
+    override suspend fun obtenerMedicos(): List<Medico> { comprobarLectura(); return CitasSimuladas.medicos }
+    override suspend fun obtenerCitas(): List<Cita> { delay(retardoCargaMs); comprobarLectura(); return mutex.withLock { citas.toList() } }
+    override suspend fun obtenerCita(id: String): Cita? { delay(retardoCargaMs); comprobarLectura(); return mutex.withLock { citas.firstOrNull { it.id == id } } }
     override suspend fun solicitarCita(cita: Cita): Cita = mutex.withLock { citas.add(cita); cita }
     override suspend fun cancelarCita(id: String, motivo: String): Cita = mutex.withLock {
         val index = citas.indexOfFirst { it.id == id }

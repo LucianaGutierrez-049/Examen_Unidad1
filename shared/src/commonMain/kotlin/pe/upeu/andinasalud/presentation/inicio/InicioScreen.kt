@@ -11,7 +11,7 @@ import pe.upeu.andinasalud.presentation.common.*
 
 @Composable
 fun InicioScreen(estado: LoadState<InicioDatos>, recargar: () -> Unit, irCitas: () -> Unit,
-    solicitar: () -> Unit, abrirDetalle: (String) -> Unit) {
+    solicitar: () -> Unit, abrirDetalle: (String) -> Unit, puedeSolicitar: Boolean) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(18.dp)) {
         Text("AndinaSalud", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary)
@@ -29,6 +29,6 @@ fun InicioScreen(estado: LoadState<InicioDatos>, recargar: () -> Unit, irCitas: 
         }
         Text("Accesos rápidos", style = MaterialTheme.typography.titleMedium)
         Button(onClick = irCitas, modifier = Modifier.fillMaxWidth()) { Text("Mis citas") }
-        OutlinedButton(onClick = solicitar, modifier = Modifier.fillMaxWidth()) { Text("Solicitar cita") }
+        OutlinedButton(onClick = solicitar, enabled = puedeSolicitar, modifier = Modifier.fillMaxWidth()) { Text("Solicitar cita") }
     }
 }

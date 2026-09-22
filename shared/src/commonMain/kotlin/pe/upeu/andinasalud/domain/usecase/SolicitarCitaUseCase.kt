@@ -24,7 +24,7 @@ class SolicitarCitaUseCase(private val repository: CitaRepository, private val r
                 it.especialidad == nueva.especialidad && sede in it.sedes
             } ?: throw SolicitudNoValida(CampoSolicitud.SEDE, "No hay médicos para esta especialidad y sede")
             repository.solicitarCita(Cita("C-${citas.size + 1}", nueva.pacienteId, medico, sede,
-                nueva.fechaHora, nueva.motivo.trim(), EstadoCita.Programada(true)))
+                nueva.fechaHora, nueva.motivo.trim(), EstadoCita.Programada(true), nueva.modalidad))
         })
     } catch (cancelada: CancellationException) {
         throw cancelada

@@ -28,12 +28,12 @@ object CitasSimuladas {
         val zona = TimeZone.currentSystemDefault()
         fun fecha(dias: Int) = (Clock.System.now() + dias.days).toLocalDateTime(zona)
         return listOf(
-            Cita("C-1", paciente.id, medicos[0], sedes[0], fecha(4), "Control médico general", EstadoCita.Programada(true)),
-            Cita("C-2", paciente.id, medicos[2], sedes[1], fecha(8), "Evaluación odontológica", EstadoCita.Programada(false)),
-            Cita("C-3", paciente.id, medicos[6], sedes[3], fecha(13), "Consulta de nutrición", EstadoCita.Programada(true)),
-            Cita("C-4", paciente.id, medicos[4], sedes[2], fecha(-30), "Control pediátrico", EstadoCita.Atendida("Control en tres meses")),
-            Cita("C-5", paciente.id, medicos[8], sedes[0], fecha(-15), "Seguimiento psicológico", EstadoCita.Atendida("Continuar sesiones quincenales")),
-            Cita("C-6", paciente.id, medicos[0], sedes[1], fecha(-10), "Consulta general", EstadoCita.Cancelada("Viaje del paciente", true)),
+            Cita("C-1", paciente.id, medicos[0], sedes[0], fecha(4), "Control médico general", EstadoCita.Programada(true), ModalidadAtencion.PRESENCIAL),
+            Cita("C-2", paciente.id, medicos[2], sedes[1], fecha(8), "Evaluación odontológica", EstadoCita.Programada(false), ModalidadAtencion.PRESENCIAL),
+            Cita("C-3", paciente.id, medicos[6], sedes[3], fecha(13), "Consulta de nutrición", EstadoCita.Programada(true), ModalidadAtencion.TELECONSULTA),
+            Cita("C-4", paciente.id, medicos[4], sedes[2], fecha(-30), "Control pediátrico", EstadoCita.Atendida("Control en tres meses"), ModalidadAtencion.PRESENCIAL),
+            Cita("C-5", paciente.id, medicos[8], sedes[0], fecha(-15), "Seguimiento psicológico", EstadoCita.Atendida("Continuar sesiones quincenales"), ModalidadAtencion.TELECONSULTA),
+            Cita("C-6", paciente.id, medicos[0], sedes[1], fecha(-10), "Consulta general", EstadoCita.Cancelada("Viaje del paciente", true), ModalidadAtencion.PRESENCIAL),
         )
     }
 }

@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
 import pe.upeu.andinasalud.domain.model.Cita
 import pe.upeu.andinasalud.domain.model.EstadoCita
+import pe.upeu.andinasalud.domain.model.ModalidadAtencion
 
 @Composable
 fun EstadoCitaChip(estado: EstadoCita) {
@@ -37,6 +38,8 @@ fun CitaCard(cita: Cita, onClick: () -> Unit, modifier: Modifier = Modifier) {
             Text(cita.medico.especialidad, style = MaterialTheme.typography.titleMedium)
             Text(cita.medico.nombre, style = MaterialTheme.typography.bodyMedium)
             Text("${cita.sede.nombre} · ${fechaLegible(cita)}", style = MaterialTheme.typography.bodyMedium)
+            Text(if (cita.modalidad == ModalidadAtencion.PRESENCIAL) "🏥 Presencial" else "📹 Teleconsulta",
+                style = MaterialTheme.typography.bodyMedium)
             EstadoCitaChip(cita.estado)
         }
     }

@@ -19,9 +19,10 @@ val appModule = module {
     factory { ObtenerCitasUseCase(get()) }
     single { SolicitarCitaUseCase(get(), get(), get()) }
     single { CancelarCitaUseCase(get(), get(), get()) }
+    single { ReprogramarCitaUseCase(get(), get(), get()) }
     viewModel { InicioViewModel(get(), get()) }
-    viewModel { CitasViewModel(get()) }
-    viewModel { DetalleCitaViewModel(get(), get(), get()) }
+    viewModel { CitasViewModel(get(), get(), get()) }
+    viewModel { DetalleCitaViewModel(get(), get(), get(), get()) }
     viewModel { SolicitudViewModel(get(), get()) }
     viewModel { PerfilViewModel(get()) }
 }

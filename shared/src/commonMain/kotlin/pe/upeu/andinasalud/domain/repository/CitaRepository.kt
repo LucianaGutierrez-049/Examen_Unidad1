@@ -1,6 +1,7 @@
 package pe.upeu.andinasalud.domain.repository
 
 import pe.upeu.andinasalud.domain.model.*
+import kotlinx.datetime.LocalDateTime
 
 interface CitaRepository {
     suspend fun obtenerPaciente(): Paciente
@@ -11,4 +12,5 @@ interface CitaRepository {
     suspend fun obtenerCita(id: String): Cita?
     suspend fun solicitarCita(cita: Cita): Cita
     suspend fun cancelarCita(id: String, motivo: String): Cita
+    suspend fun reprogramarCita(id: String, fechaHora: LocalDateTime): Cita
 }

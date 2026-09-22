@@ -8,10 +8,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import pe.upeu.andinasalud.domain.model.EstadoCita
+import pe.upeu.andinasalud.domain.model.ModalidadAtencion
 import pe.upeu.andinasalud.presentation.common.*
 
 @Composable
-fun DetalleCitaScreen(estado: DetalleUiState, volver: () -> Unit, recargar: () -> Unit, cancelar: () -> Unit) {
+fun DetalleCitaScreen(estado: DetalleUiState, volver: () -> Unit, recargar: () -> Unit, cancelar: () -> Unit,
+    iniciarReprogramacion: () -> Unit, fecha: (String) -> Unit, hora: (String) -> Unit,
+    confirmarReprogramacion: () -> Unit) {
     var confirmar by remember { mutableStateOf(false) }
     if (confirmar) AlertDialog(onDismissRequest = { confirmar = false }, title = { Text("Cancelar cita") },
         text = { Text("¿Confirmas que deseas cancelar esta cita?") },
@@ -31,7 +34,11 @@ fun DetalleCitaScreen(estado: DetalleUiState, volver: () -> Unit, recargar: () -
                 DetailRow("Médico", cita.medico.nombre)
                 DetailRow("Sede", cita.sede.nombre)
                 DetailRow("Fecha y hora", fechaLegible(cita))
+                DetailRow("Modalidad", if (cita.modalidad == ModalidadAtencion.PRESENCIAL) "🏥 Presencial" else "📹 Teleconsulta")
                 DetailRow("Motivo", cita.motivo)
+                cita.cambiosProgramacion.forEachIndexed { indice, cambio ->
+                    DetailRow("Reprogramación ${indice + 1}", "${cambio.anterior} → ${cambio.nueva}")
+                }
                 EstadoCitaChip(cita.estado)
                 when (val estadoCita = cita.estado) {
                     is EstadoCita.Atendida -> DetailRow("Indicaciones", estadoCita.indicaciones)
@@ -40,6 +47,22 @@ fun DetalleCitaScreen(estado: DetalleUiState, volver: () -> Unit, recargar: () -
                 }
                 if (estado.puedeCancelar) Button(onClick = { confirmar = true }, modifier = Modifier.fillMaxWidth()) {
                     Text("Cancelar cita")
+                }
+                if (cita.estado is EstadoCita.Programada) {
+                    if (estado.reprogramando) {
+                        Text("Nueva fecha y hora", style = MaterialTheme.typography.titleMedium)
+                        CampoFormulario("Fecha", estado.fecha, estado.errorFecha, fecha, placeholder = "AAAA-MM-DD")
+                        CampoFormulario("Hora", estado.hora, estado.errorHora, hora, placeholder = "HH:MM")
+                        Button(onClick = confirmarReprogramacion, enabled = !estado.guardando,
+                            modifier = Modifier.fillMaxWidth()) {
+                            Text(if (estado.guardando) "Guardando…" else "Confirmar reprogramación")
+                        }
+                        TextButton(onClick = iniciarReprogramacion) { Text("Cerrar formulario") }
+                    } else {
+                        OutlinedButton(onClick = iniciarReprogramacion, modifier = Modifier.fillMaxWidth()) {
+                            Text("Reprogramar cita")
+                        }
+                    }
                 }
                 estado.accionError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             }

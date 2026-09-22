@@ -9,7 +9,7 @@
 | RF-01 Inicio | `presentation/inicio/InicioScreen.kt` · `InicioScreen`; `InicioViewModel.kt` | PARCIAL | Saludo, próxima cita y accesos implementados; falta verlo en dispositivo. |
 | RF-02 Lista | `presentation/citas/CitasScreen.kt` · `CitasScreen`; `CitasViewModel.kt`; `ObtenerCitasUseCase.kt` | PARCIAL | `LazyColumn`, futuras primero, historial después y filtros; orden probado, visual pendiente. |
 | RF-03 Detalle | `presentation/detalle/DetalleCitaScreen.kt` · `DetalleCitaScreen`; `DetalleCitaViewModel.kt` | PARCIAL | Datos, indicaciones, diálogo y cancelación validada; interacción visual pendiente. |
-| RF-04 Solicitud | `presentation/solicitud/SolicitudScreen.kt` · `SolicitudScreen`; `SolicitudViewModel.kt` | PARCIAL | Cinco campos, errores por campo y fallo de operación manejado; interacción visual pendiente. |
+| RF-04 Solicitud | `presentation/solicitud/SolicitudScreen.kt` · `SolicitudScreen`; `SolicitudViewModel.kt` | PARCIAL | Formulario con modalidad, errores por campo y fallo de operación manejado; interacción visual pendiente. |
 | RF-05 Búsqueda | `presentation/citas/CitasViewModel.kt` · `normalizar`, `filtrar` | PARCIAL | Lógica de búsqueda sin tildes probada; uso visual del campo pendiente. |
 | RF-06 Perfil/Tema | `presentation/perfil/PerfilScreen.kt` · `PerfilScreen`; `App.kt` | PARCIAL | Datos y tema global en código; cambio visual pendiente. |
 | RF-07 Navegación | `presentation/navigation/AppNavHost.kt` · `AppNavHost` | PARCIAL | Tres destinos, detalle, solicitud y atrás implementados; recorrido en dispositivo pendiente. |
@@ -52,17 +52,17 @@
 
 ## Validación manual pendiente
 
-- Android: abrir el APK en emulador/teléfono y recorrer las cinco pantallas, atrás, tema, creación y cancelación. El emulador detectado devolvió `Broken pipe` desde Package Manager al instalar y listar paquetes, incluso tras reiniciarlo.
+- Android: abrir el APK recién generado en Android Studio y recorrer las cinco pantallas, atrás, tema, creación, cancelación y las nuevas funciones SC-A–SC-D. El error anterior `Broken pipe` fue transitorio; no se ha repetido el recorrido manual con este APK.
 - iOS: compilar/ejecutar en Mac con Xcode y repetir el mismo recorrido.
 - Capturas: Inicio, Citas sin filtro y con filtro/búsqueda, Detalle, Solicitud con validación y Perfil en claro/oscuro; repetir en Android e iOS. Adjuntar también gráfico Git y `git shortlog -sne` reales.
 
-## Preparación de cambios de Parte II
+## Cambios de Parte II
 
 | Cambio | Estado | Punto de extensión |
 | --- | --- | --- |
-| SC-A | CUMPLE como preparación | `CitasViewModel.filtrar` combina criterios fuera de la UI. |
-| SC-B | CUMPLE como preparación | `ReglasCita.validarCupo` es reutilizable desde un futuro estado del ViewModel. |
-| SC-C | CUMPLE como preparación | `Cita` y `NuevaCita` recorren dominio, repositorio y presentación. |
-| SC-D | CUMPLE como preparación | `validarFecha` y `validarHorario(..., exceptoId)` reutilizan reglas para reprogramar. |
+| SC-A | Implementado en código; lógica probada | Chip «Hoy» combinado con estado desde `CitasViewModel`. |
+| SC-B | Implementado en código; lógica probada | Contador en barra inferior y bloqueo de solicitud derivados de `ReglasCita`. |
+| SC-C | Implementado en código; dominio probado | Modalidad en dominio, repositorio simulado, formulario, lista y detalle. |
+| SC-D | Implementado en código; caso de uso probado | Validaciones compartidas, persistencia en memoria e historial en detalle. |
 
-SC-A, SC-B, SC-C y SC-D siguen sin implementarse en la aplicación base, como se solicitó.
+La compilación Android y las 12 pruebas locales pasaron. La inspección manual de las nuevas interfaces y la ejecución iOS todavía no se han verificado.

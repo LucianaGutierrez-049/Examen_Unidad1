@@ -11,6 +11,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import pe.upeu.andinasalud.domain.model.NuevaCita
+import pe.upeu.andinasalud.domain.model.ModalidadAtencion
 import pe.upeu.andinasalud.domain.repository.CitaRepository
 import pe.upeu.andinasalud.domain.usecase.CampoSolicitud
 import pe.upeu.andinasalud.domain.usecase.SolicitarCitaUseCase
@@ -39,6 +40,8 @@ class SolicitudViewModel(private val repository: CitaRepository, private val sol
     fun fecha(valor: String) { _uiState.value = _uiState.value.copy(fecha = valor, errores = _uiState.value.errores.copy(fecha = null)) }
     fun hora(valor: String) { _uiState.value = _uiState.value.copy(hora = valor, errores = _uiState.value.errores.copy(hora = null)) }
     fun motivo(valor: String) { _uiState.value = _uiState.value.copy(motivo = valor, errores = _uiState.value.errores.copy(motivo = null)) }
+    fun modalidad(valor: ModalidadAtencion) { _uiState.value = _uiState.value.copy(modalidad = valor,
+        errores = _uiState.value.errores.copy(modalidad = null)) }
 
     fun enviar() = viewModelScope.launch {
         val actual = _uiState.value
@@ -50,12 +53,13 @@ class SolicitudViewModel(private val repository: CitaRepository, private val sol
             fecha = if (fecha == null) "Usa el formato AAAA-MM-DD" else null,
             hora = if (hora == null) "Usa el formato HH:MM" else null,
             motivo = if (actual.motivo.isBlank()) "Ingresa el motivo" else null,
+            modalidad = if (actual.modalidad == null) "Selecciona una modalidad" else null,
         )
         if (errores != ErroresFormulario()) { _uiState.value = actual.copy(errores = errores); return@launch }
         _uiState.value = actual.copy(guardando = true, envioError = null)
         val resultado = try {
             val paciente = repository.obtenerPaciente()
-            solicitar(NuevaCita(paciente.id, actual.especialidad, actual.sedeId, LocalDateTime(fecha!!, hora!!), actual.motivo))
+            solicitar(NuevaCita(paciente.id, actual.especialidad, actual.sedeId, LocalDateTime(fecha!!, hora!!), actual.motivo, actual.modalidad!!))
         } catch (cancelada: CancellationException) {
             throw cancelada
         } catch (error: Exception) {

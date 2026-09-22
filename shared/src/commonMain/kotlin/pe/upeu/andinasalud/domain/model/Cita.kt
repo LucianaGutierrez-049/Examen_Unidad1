@@ -10,7 +10,11 @@ data class Cita(
     val fechaHora: LocalDateTime,
     val motivo: String,
     val estado: EstadoCita,
+    val modalidad: ModalidadAtencion,
+    val cambiosProgramacion: List<CambioProgramacion> = emptyList(),
 )
+
+data class CambioProgramacion(val anterior: LocalDateTime, val nueva: LocalDateTime)
 
 data class NuevaCita(
     val pacienteId: String,
@@ -18,4 +22,5 @@ data class NuevaCita(
     val sedeId: String,
     val fechaHora: LocalDateTime,
     val motivo: String,
+    val modalidad: ModalidadAtencion,
 )

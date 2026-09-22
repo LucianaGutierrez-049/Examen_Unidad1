@@ -8,11 +8,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import pe.upeu.andinasalud.presentation.common.*
+import pe.upeu.andinasalud.domain.model.ModalidadAtencion
 
 @Composable
 fun SolicitudScreen(estado: SolicitudUiState, volver: () -> Unit, verCitas: () -> Unit, recargar: () -> Unit,
     especialidad: (String) -> Unit, sede: (String) -> Unit, fecha: (String) -> Unit,
-    hora: (String) -> Unit, motivo: (String) -> Unit, enviar: () -> Unit) {
+    hora: (String) -> Unit, motivo: (String) -> Unit, modalidad: (ModalidadAtencion) -> Unit,
+    enviar: () -> Unit) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)) {
         TextButton(onClick = volver) { Text("‹ Volver") }
@@ -32,6 +34,14 @@ fun SolicitudScreen(estado: SolicitudUiState, volver: () -> Unit, verCitas: () -
                 CampoFormulario("Fecha", estado.fecha, estado.errores.fecha, fecha, placeholder = "AAAA-MM-DD")
                 CampoFormulario("Hora", estado.hora, estado.errores.hora, hora, placeholder = "HH:MM")
                 CampoFormulario("Motivo de consulta", estado.motivo, estado.errores.motivo, motivo, minLineas = 3)
+                Text("Modalidad de atención", style = MaterialTheme.typography.titleMedium)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ModalidadAtencion.entries.forEach { opcion ->
+                        FilterChip(selected = estado.modalidad == opcion, onClick = { modalidad(opcion) },
+                            label = { Text(if (opcion == ModalidadAtencion.PRESENCIAL) "🏥 Presencial" else "📹 Teleconsulta") })
+                    }
+                }
+                estado.errores.modalidad?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                 estado.envioError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                 Button(onClick = enviar, enabled = !estado.guardando, modifier = Modifier.fillMaxWidth()) {
                     Text(if (estado.guardando) "Guardando…" else "Confirmar solicitud")

@@ -6,6 +6,7 @@ import kotlinx.coroutines.sync.withLock
 import pe.upeu.andinasalud.data.local.CitasSimuladas
 import pe.upeu.andinasalud.domain.model.*
 import pe.upeu.andinasalud.domain.repository.CitaRepository
+import kotlinx.datetime.LocalDateTime
 
 class CitaRepositoryFake(
     citasIniciales: List<Cita> = CitasSimuladas.citasIniciales(),
@@ -26,6 +27,15 @@ class CitaRepositoryFake(
         val index = citas.indexOfFirst { it.id == id }
         require(index >= 0) { "La cita no existe" }
         citas[index] = citas[index].copy(estado = EstadoCita.Cancelada(motivo, true))
+        citas[index]
+    }
+    override suspend fun reprogramarCita(id: String, fechaHora: LocalDateTime): Cita = mutex.withLock {
+        val index = citas.indexOfFirst { it.id == id }
+        require(index >= 0) { "La cita no existe" }
+        val anterior = citas[index]
+        require(anterior.estado is EstadoCita.Programada) { "Solo se puede reprogramar una cita programada" }
+        citas[index] = anterior.copy(fechaHora = fechaHora,
+            cambiosProgramacion = anterior.cambiosProgramacion + CambioProgramacion(anterior.fechaHora, fechaHora))
         citas[index]
     }
 }

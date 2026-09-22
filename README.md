@@ -55,21 +55,21 @@ Se necesita macOS con Xcode y un simulador iOS ARM64 o un dispositivo configurad
 
 ## Trabajo individual
 
-La evaluación se desarrolla individualmente según la indicación actual del docente. El historial debe conservar un solo autor real; no se crean revisiones cruzadas ni solicitudes de incorporación ficticias. La Parte II (SC-A, SC-B, SC-C o SC-D) se implementará cuando se asigne, en una rama `sc-<letra>-gutierrez` creada desde `develop`.
+La evaluación se desarrolla individualmente según la indicación actual del docente. El historial debe conservar un solo autor real; no se crean revisiones cruzadas ni solicitudes de incorporación ficticias. Los cuatro cambios SC-A–SC-D están implementados como preparación; la solicitud concreta que asigne el docente y su evidencia de implementación en vivo se deben documentar por separado.
 
 ## Alcance de pantallas
 
 Los requisitos describen cinco pantallas: Inicio, Citas, Detalle, Solicitud y Perfil/Ajustes. La lista de cotejo menciona seis sin identificar una sexta funcionalidad. Perfil y Ajustes comparten pantalla, como permite RF-06; se deja esta ambigüedad documentada.
 
-## Preparación para la Parte II
+## Cambios de la Parte II
 
-- SC-A: `CitasViewModel.filtrar` combina filtros fuera del Composable.
-- SC-B: `ReglasCita.validarCupo` es la única regla de límite; la UI futura debe leer su resultado desde un ViewModel.
-- SC-C: `Cita` y `NuevaCita` son los puntos del dominio para incorporar modalidad, que después recorrería repositorio y pantallas.
-- SC-D: `ReglasCita.validarFecha` y `validarHorario(..., exceptoId)` permiten reutilizar las validaciones al reprogramar.
+- SC-A: el chip «Hoy» se combina con el filtro de estado en `CitasViewModel`, sin lógica de fecha en el Composable.
+- SC-B: la barra inferior muestra el número de citas programadas y los accesos a solicitud se deshabilitan al alcanzar el límite definido en `ReglasCita`.
+- SC-C: la modalidad Presencial/Teleconsulta está en el modelo de dominio, los datos simulados, el formulario, la lista y el detalle, con iconos distintos.
+- SC-D: se reprograma una cita Programada desde el detalle; `ReprogramarCitaUseCase` reutiliza las reglas de fecha y horario, y el detalle muestra el historial de cambios.
 
-Ninguna solicitud SC está implementada en la aplicación base.
+Las cuatro implementaciones están cubiertas por compilación y pruebas Android; falta el recorrido manual de las nuevas interfaces y la verificación iOS en macOS.
 
 ## Verificación
 
-En Windows se ejecutaron `:shared:testAndroidHostTest` y `:androidApp:assembleDebug`: 10 pruebas, 0 fallos y APK generado. Las pruebas revisan reglas, operaciones concurrentes, cantidades iniciales, búsqueda sin tildes, Koin y estados Cargando/Contenido/Vacío/Error. El emulador conectado no permitió instalar el APK porque su servicio Package Manager devolvió `Broken pipe`; la inspección visual Android sigue pendiente. La compilación/ejecución iOS debe realizarse en Mac.
+En Windows se ejecutaron `:shared:testAndroidHostTest` y `:androidApp:assembleDebug`: 12 pruebas, 0 fallos y APK generado. Las pruebas revisan reglas, operaciones concurrentes, cantidades iniciales, búsqueda sin tildes, Koin, estados Cargando/Contenido/Vacío/Error y los cambios SC-A–SC-D. La ejecución manual del APK recién generado y la compilación/ejecución iOS siguen pendientes.

@@ -36,7 +36,7 @@ fun AppNavHost(oscuro: Boolean, cambiarTema: (Boolean) -> Unit) {
 
     LaunchedEffect(actual) {
         when (actual) {
-            Destino.Inicio -> inicioVM.cargar()
+            Destino.Inicio -> { inicioVM.cargar(); citasVM.cargar() }
             Destino.Citas -> citasVM.cargar()
             Destino.Perfil -> perfilVM.cargar()
             is Destino.Detalle -> detalleVM.cargar(actual.id)
@@ -49,7 +49,9 @@ fun AppNavHost(oscuro: Boolean, cambiarTema: (Boolean) -> Unit) {
                 listOf(Triple(Destino.Inicio, "Inicio", "⌂"), Triple(Destino.Citas, "Citas", "▤"),
                     Triple(Destino.Perfil, "Perfil", "●")).forEach { (destino, titulo, icono) ->
                     NavigationBarItem(selected = actual == destino, onClick = { principal(destino) },
-                        icon = { Text(icono) }, label = { Text(titulo) })
+                        icon = { Text(icono) }, label = {
+                            Text(if (destino == Destino.Citas) "Citas ${citas.programadas?.let { "$it/${citas.limiteProgramadas}" } ?: "…"}" else titulo)
+                        })
                 }
             }
         }
@@ -57,15 +59,16 @@ fun AppNavHost(oscuro: Boolean, cambiarTema: (Boolean) -> Unit) {
         androidx.compose.foundation.layout.Box(Modifier.padding(padding)) {
             when (actual) {
                 Destino.Inicio -> InicioScreen(inicio, inicioVM::cargar, { principal(Destino.Citas) },
-                    { abrir(Destino.Solicitud) }, { abrir(Destino.Detalle(it)) })
-                Destino.Citas -> CitasScreen(citas, citasVM::buscar, citasVM::seleccionarFiltro,
+                    { abrir(Destino.Solicitud) }, { abrir(Destino.Detalle(it)) }, citas.puedeSolicitar)
+                Destino.Citas -> CitasScreen(citas, citasVM::buscar, citasVM::seleccionarFiltro, citasVM::seleccionarHoy,
                     citasVM::cargar, { abrir(Destino.Detalle(it)) }, { abrir(Destino.Solicitud) })
                 Destino.Perfil -> PerfilScreen(perfil, perfilVM::cargar, oscuro, cambiarTema)
                 is Destino.Detalle -> DetalleCitaScreen(detalle, ::volver, { detalleVM.cargar(actual.id) },
-                    { detalleVM.cancelar(actual.id) })
+                    { detalleVM.cancelar(actual.id) }, detalleVM::alternarReprogramacion,
+                    detalleVM::fecha, detalleVM::hora, { detalleVM.confirmarReprogramacion(actual.id) })
                 Destino.Solicitud -> SolicitudScreen(solicitud, ::volver, { principal(Destino.Citas) },
                     solicitudVM::cargar, solicitudVM::especialidad, solicitudVM::sede, solicitudVM::fecha,
-                    solicitudVM::hora, solicitudVM::motivo, solicitudVM::enviar)
+                    solicitudVM::hora, solicitudVM::motivo, solicitudVM::modalidad, solicitudVM::enviar)
             }
         }
     }

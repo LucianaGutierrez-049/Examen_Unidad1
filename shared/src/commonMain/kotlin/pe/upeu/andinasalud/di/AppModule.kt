@@ -15,9 +15,10 @@ import pe.upeu.andinasalud.presentation.solicitud.SolicitudViewModel
 val appModule = module {
     single<CitaRepository> { CitaRepositoryFake() }
     single { ReglasCita() }
+    single { OperacionCitaGuard() }
     factory { ObtenerCitasUseCase(get()) }
-    factory { SolicitarCitaUseCase(get(), get()) }
-    factory { CancelarCitaUseCase(get(), get()) }
+    single { SolicitarCitaUseCase(get(), get(), get()) }
+    single { CancelarCitaUseCase(get(), get(), get()) }
     viewModel { InicioViewModel(get(), get()) }
     viewModel { CitasViewModel(get()) }
     viewModel { DetalleCitaViewModel(get(), get(), get()) }

@@ -62,6 +62,9 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
+        getByName("androidHostTest").dependencies {
+            implementation(libs.kotlinx.coroutines.test)
+        }
     }
 }
 

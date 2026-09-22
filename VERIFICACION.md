@@ -10,10 +10,10 @@
 | RF-02 Lista | `presentation/citas/CitasScreen.kt` · `CitasScreen`; `CitasViewModel.kt`; `ObtenerCitasUseCase.kt` | PARCIAL | `LazyColumn`, futuras primero, historial después y filtros; orden probado, visual pendiente. |
 | RF-03 Detalle | `presentation/detalle/DetalleCitaScreen.kt` · `DetalleCitaScreen`; `DetalleCitaViewModel.kt` | PARCIAL | Datos, indicaciones, diálogo y cancelación validada; interacción visual pendiente. |
 | RF-04 Solicitud | `presentation/solicitud/SolicitudScreen.kt` · `SolicitudScreen`; `SolicitudViewModel.kt` | PARCIAL | Cinco campos, errores por campo y fallo de operación manejado; interacción visual pendiente. |
-| RF-05 Búsqueda | `presentation/citas/CitasViewModel.kt` · `normalizar`, `filtrar` | CUMPLE | Especialidad/médico, sin distinguir caso ni tildes; prueba de normalización. |
+| RF-05 Búsqueda | `presentation/citas/CitasViewModel.kt` · `normalizar`, `filtrar` | PARCIAL | Lógica de búsqueda sin tildes probada; uso visual del campo pendiente. |
 | RF-06 Perfil/Tema | `presentation/perfil/PerfilScreen.kt` · `PerfilScreen`; `App.kt` | PARCIAL | Datos y tema global en código; cambio visual pendiente. |
 | RF-07 Navegación | `presentation/navigation/AppNavHost.kt` · `AppNavHost` | PARCIAL | Tres destinos, detalle, solicitud y atrás implementados; recorrido en dispositivo pendiente. |
-| RF-08 Estados UI | `presentation/common/LoadState.kt` · `LoadState`; ViewModels; `CitaRepositoryFake.kt` | CUMPLE | Cargando, contenido, vacío y error probados en `CitasViewModelTest`; `delay(800)` con reloj de prueba. |
+| RF-08 Estados UI | `presentation/common/LoadState.kt` · `LoadState`; ViewModels; `CitaRepositoryFake.kt` | PARCIAL | Cargando, contenido, vacío y error probados en `CitasViewModelTest`; representación visual pendiente. |
 
 ## Reglas de negocio
 

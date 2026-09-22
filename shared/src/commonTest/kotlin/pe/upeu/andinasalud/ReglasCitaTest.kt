@@ -1,10 +1,20 @@
 package pe.upeu.andinasalud
 
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import pe.upeu.andinasalud.data.local.CitasSimuladas
+import pe.upeu.andinasalud.data.repository.CitaRepositoryFake
 import pe.upeu.andinasalud.domain.model.EstadoCita
+import pe.upeu.andinasalud.domain.model.NuevaCita
+import pe.upeu.andinasalud.domain.usecase.CancelarCitaUseCase
+import pe.upeu.andinasalud.domain.usecase.ObtenerCitasUseCase
+import pe.upeu.andinasalud.domain.usecase.OperacionCitaGuard
 import pe.upeu.andinasalud.domain.usecase.ReglasCita
+import pe.upeu.andinasalud.domain.usecase.SolicitarCitaUseCase
 import pe.upeu.andinasalud.presentation.citas.normalizar
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -14,6 +24,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.days
 
 class ReglasCitaTest {
     private val reglas = ReglasCita()
@@ -31,6 +42,7 @@ class ReglasCitaTest {
         assertNotNull(reglas.validarCupo(citas, CitasSimuladas.paciente.id))
         assertNotNull(reglas.validarHorario(citas, CitasSimuladas.paciente.id, citas[0].fechaHora))
         assertNull(reglas.validarHorario(citas, "otro-paciente", citas[0].fechaHora))
+        assertNull(reglas.validarHorario(citas, CitasSimuladas.paciente.id, citas[0].fechaHora, citas[0].id))
     }
 
     @Test fun cancelacionSoloProgramadaConMasDeUnDia() {
@@ -47,5 +59,37 @@ class ReglasCitaTest {
         assertEquals(1, citas.count { it.estado is EstadoCita.Cancelada })
         assertEquals(10, CitasSimuladas.medicos.size)
         assertEquals("nutricion", normalizar("Nutrición"))
+    }
+
+    @Test fun listaPriorizaCitasFuturasYRepositorioRepresentaVacioYError() = runBlocking {
+        val ordenadas = ObtenerCitasUseCase(CitaRepositoryFake(retardoCargaMs = 0))()
+        assertEquals("C-1", ordenadas.first().id)
+        assertEquals("C-6", ordenadas[3].id)
+        assertTrue(CitaRepositoryFake(emptyList(), retardoCargaMs = 0).obtenerCitas().isEmpty())
+        assertTrue(runCatching {
+            CitaRepositoryFake(falloLectura = true, retardoCargaMs = 0).obtenerCitas()
+        }.isFailure)
+    }
+
+    @Test fun cancelacionLiberaCupoYPermiteSolicitud() = runBlocking {
+        val repo = CitaRepositoryFake(retardoCargaMs = 0)
+        val guard = OperacionCitaGuard()
+        assertTrue(CancelarCitaUseCase(repo, reglas, guard)("C-1").isSuccess)
+        val nueva = NuevaCita(CitasSimuladas.paciente.id, "Medicina General", "nana",
+            (Clock.System.now() + 20.days).toLocalDateTime(TimeZone.currentSystemDefault()), "Control preventivo")
+        assertTrue(SolicitarCitaUseCase(repo, reglas, guard)(nueva).isSuccess)
+        assertEquals(3, repo.obtenerCitas().count { it.estado is EstadoCita.Programada })
+    }
+
+    @Test fun solicitudesConcurrentesNoSuperanTresProgramadas() = runBlocking {
+        val repo = CitaRepositoryFake(citas.take(2), retardoCargaMs = 0)
+        val uso = SolicitarCitaUseCase(repo, reglas, OperacionCitaGuard())
+        val nuevas = listOf(20, 21).map { dias ->
+            NuevaCita(CitasSimuladas.paciente.id, "Medicina General", "nana",
+                (Clock.System.now() + dias.days).toLocalDateTime(TimeZone.currentSystemDefault()), "Consulta preventiva")
+        }
+        val resultados = coroutineScope { nuevas.map { async { uso(it) } }.awaitAll() }
+        assertEquals(1, resultados.count { it.isSuccess })
+        assertEquals(3, repo.obtenerCitas().count { it.estado is EstadoCita.Programada })
     }
 }

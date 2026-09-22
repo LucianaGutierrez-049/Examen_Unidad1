@@ -2,6 +2,7 @@ package pe.upeu.andinasalud.presentation.detalle
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -22,7 +23,10 @@ class DetalleCitaViewModel(private val repository: CitaRepository, private val c
         runCatching { repository.obtenerCita(id) }.onSuccess { cita ->
             _uiState.value = if (cita == null) DetalleUiState(LoadState.Vacio)
                 else DetalleUiState(LoadState.Contenido(cita), reglas.puedeCancelar(cita))
-        }.onFailure { _uiState.value = DetalleUiState(LoadState.Error(it.message ?: "No se pudo cargar la cita")) }
+        }.onFailure {
+            if (it is CancellationException) throw it
+            _uiState.value = DetalleUiState(LoadState.Error(it.message ?: "No se pudo cargar la cita"))
+        }
     }
     fun cancelar(id: String) = viewModelScope.launch {
         cancelar.invoke(id).onSuccess { _uiState.value = DetalleUiState(LoadState.Contenido(it), false) }

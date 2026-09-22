@@ -1,6 +1,8 @@
 package pe.upeu.andinasalud.presentation.perfil
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -10,7 +12,8 @@ import pe.upeu.andinasalud.presentation.common.*
 
 @Composable
 fun PerfilScreen(estado: LoadState<Paciente>, recargar: () -> Unit, oscuro: Boolean, cambiarTema: (Boolean) -> Unit) {
-    Column(Modifier.fillMaxSize().padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text("Perfil y ajustes", style = MaterialTheme.typography.headlineMedium)
         when (estado) {
             LoadState.Cargando -> LoadingView()

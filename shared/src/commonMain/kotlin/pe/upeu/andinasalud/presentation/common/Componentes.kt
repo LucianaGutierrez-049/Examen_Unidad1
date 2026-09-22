@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
 import pe.upeu.andinasalud.domain.model.Cita
 import pe.upeu.andinasalud.domain.model.EstadoCita
@@ -16,7 +17,10 @@ fun EstadoCitaChip(estado: EstadoCita) {
         is EstadoCita.Atendida -> "Atendida"
         is EstadoCita.Cancelada -> "Cancelada"
     }
-    SuggestionChip(onClick = {}, label = { Text(texto) })
+    Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = RoundedCornerShape(50)) {
+        Text(texto, modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+            color = MaterialTheme.colorScheme.onPrimaryContainer, style = MaterialTheme.typography.labelMedium)
+    }
 }
 
 fun fechaLegible(cita: Cita): String {

@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.dp
 import pe.upeu.andinasalud.presentation.common.*
 
 @Composable
-fun SolicitudScreen(estado: SolicitudUiState, volver: () -> Unit, recargar: () -> Unit,
+fun SolicitudScreen(estado: SolicitudUiState, volver: () -> Unit, verCitas: () -> Unit, recargar: () -> Unit,
     especialidad: (String) -> Unit, sede: (String) -> Unit, fecha: (String) -> Unit,
     hora: (String) -> Unit, motivo: (String) -> Unit, enviar: () -> Unit) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
@@ -23,7 +23,7 @@ fun SolicitudScreen(estado: SolicitudUiState, volver: () -> Unit, recargar: () -
             is LoadState.Error -> ErrorView(carga.mensaje, recargar)
             is LoadState.Contenido -> if (estado.guardada) {
                 Text("Tu cita fue solicitada correctamente", style = MaterialTheme.typography.titleMedium)
-                Button(onClick = volver) { Text("Ver mis citas") }
+                Button(onClick = verCitas) { Text("Ver mis citas") }
             } else {
                 Selector("Especialidad", estado.especialidad, estado.especialidades.map { it to it },
                     estado.errores.especialidad, especialidad)
@@ -32,6 +32,7 @@ fun SolicitudScreen(estado: SolicitudUiState, volver: () -> Unit, recargar: () -
                 CampoFormulario("Fecha", estado.fecha, estado.errores.fecha, fecha, placeholder = "AAAA-MM-DD")
                 CampoFormulario("Hora", estado.hora, estado.errores.hora, hora, placeholder = "HH:MM")
                 CampoFormulario("Motivo de consulta", estado.motivo, estado.errores.motivo, motivo, minLineas = 3)
+                estado.envioError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                 Button(onClick = enviar, enabled = !estado.guardando, modifier = Modifier.fillMaxWidth()) {
                     Text(if (estado.guardando) "Guardando…" else "Confirmar solicitud")
                 }

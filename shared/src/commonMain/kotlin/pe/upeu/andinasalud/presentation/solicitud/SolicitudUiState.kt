@@ -17,4 +17,5 @@ data class SolicitudUiState(
     val errores: ErroresFormulario = ErroresFormulario(),
     val guardando: Boolean = false,
     val guardada: Boolean = false,
+    val envioError: String? = null,
 )

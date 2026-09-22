@@ -19,8 +19,9 @@ class ReglasCita(private val clock: Clock = Clock.System, private val zona: Time
         if (citas.count { it.pacienteId == pacienteId && it.estado is EstadoCita.Programada } >= 3)
             "Ya tienes tres citas programadas" else null
 
-    fun validarHorario(citas: List<Cita>, pacienteId: String, fechaHora: LocalDateTime): String? =
-        if (citas.any { it.pacienteId == pacienteId && it.estado is EstadoCita.Programada && it.fechaHora == fechaHora })
+    fun validarHorario(citas: List<Cita>, pacienteId: String, fechaHora: LocalDateTime, exceptoId: String? = null): String? =
+        if (citas.any { it.id != exceptoId && it.pacienteId == pacienteId &&
+                it.estado is EstadoCita.Programada && it.fechaHora == fechaHora })
             "Ya tienes una cita programada en ese horario" else null
 
     fun puedeCancelar(cita: Cita): Boolean =

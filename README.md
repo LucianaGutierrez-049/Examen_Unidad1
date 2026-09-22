@@ -10,9 +10,9 @@ Kotlin Multiplatform, Compose Multiplatform, Material 3, Kotlin Coroutines, Stat
 
 - `domain/model`: entidades `Paciente`, `Sede`, `Medico`, `Cita` y `EstadoCita` sellado.
 - `domain/repository`: contrato `CitaRepository`, independiente de UI y plataforma.
-- `domain/usecase`: consulta, solicitud y cancelación; `ReglasCita` centraliza RN-01 a RN-05.
+- `domain/usecase`: consulta, solicitud y cancelación; `ReglasCita` centraliza RN-01 a RN-05. `OperacionCitaGuard` serializa las operaciones de escritura durante esta sesión en memoria.
 - `data/local`: catálogo y seis citas de ejemplo. Las programadas se generan desde el reloj actual.
-- `data/repository`: implementación `CitaRepositoryFake` con lista mutable en memoria protegida por `Mutex`.
+- `data/repository`: implementación `CitaRepositoryFake` con lista mutable en memoria protegida por `Mutex`. Puede construirse con una lista vacía o un fallo de lectura para verificar estados sin alterar pantallas.
 - `presentation`: ViewModels con `StateFlow` privado mutable, `UiState`, composables y navegación.
 - `di`: módulo común de Koin; Android e iOS inicializan el contenedor en sus entradas.
 
@@ -35,6 +35,8 @@ Kotlin Multiplatform, Compose Multiplatform, Material 3, Kotlin Coroutines, Stat
 | RN-05 | Sin duplicar fecha y hora programadas para un paciente en `ReglasCita.validarHorario`. |
 
 `SolicitarCitaUseCase` y `CancelarCitaUseCase` aplican estas reglas antes de escribir en el repositorio. El formulario ubica los errores bajo el campo correspondiente.
+
+Las tres citas iniciales ya ocupan el cupo RN-02. Para demostrar una solicitud exitosa, cancela primero una cita programada a más de 24 horas y después solicita otra.
 
 ## Datos simulados
 
@@ -59,6 +61,15 @@ La evaluación se desarrolla individualmente según la indicación actual del do
 
 Los requisitos describen cinco pantallas: Inicio, Citas, Detalle, Solicitud y Perfil/Ajustes. La lista de cotejo menciona seis sin identificar una sexta funcionalidad. Perfil y Ajustes comparten pantalla, como permite RF-06; se deja esta ambigüedad documentada.
 
+## Preparación para la Parte II
+
+- SC-A: `CitasViewModel.filtrar` combina filtros fuera del Composable.
+- SC-B: `ReglasCita.validarCupo` es la única regla de límite; la UI futura debe leer su resultado desde un ViewModel.
+- SC-C: `Cita` y `NuevaCita` son los puntos del dominio para incorporar modalidad, que después recorrería repositorio y pantallas.
+- SC-D: `ReglasCita.validarFecha` y `validarHorario(..., exceptoId)` permiten reutilizar las validaciones al reprogramar.
+
+Ninguna solicitud SC está implementada en la aplicación base.
+
 ## Verificación
 
-En Windows se ejecutaron `:shared:testAndroidHostTest` y `:androidApp:assembleDebug`. Las pruebas automatizadas revisan reglas, cantidades iniciales y búsqueda sin tildes. La inspección visual en dispositivo y la compilación/ejecución iOS deben realizarse en los entornos indicados.
+En Windows se ejecutaron `:shared:testAndroidHostTest` y `:androidApp:assembleDebug`: 10 pruebas, 0 fallos y APK generado. Las pruebas revisan reglas, operaciones concurrentes, cantidades iniciales, búsqueda sin tildes, Koin y estados Cargando/Contenido/Vacío/Error. El emulador conectado no permitió instalar el APK porque su servicio Package Manager devolvió `Broken pipe`; la inspección visual Android sigue pendiente. La compilación/ejecución iOS debe realizarse en Mac.

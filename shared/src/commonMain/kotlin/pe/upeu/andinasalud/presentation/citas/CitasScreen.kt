@@ -36,7 +36,7 @@ fun CitasScreen(estado: CitasUiState, buscar: (String) -> Unit, filtrar: (Filtro
             LoadState.Cargando -> LoadingView()
             LoadState.Vacio -> EmptyView("No hay citas con estos filtros")
             is LoadState.Error -> ErrorView(carga.mensaje, recargar)
-            is LoadState.Contenido -> LazyColumn(contentPadding = PaddingValues(bottom = 24.dp),
+            is LoadState.Contenido -> LazyColumn(modifier = Modifier.weight(1f), contentPadding = PaddingValues(bottom = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(carga.datos, key = { it.id }) { CitaCard(it, { abrirDetalle(it.id) }) }
             }

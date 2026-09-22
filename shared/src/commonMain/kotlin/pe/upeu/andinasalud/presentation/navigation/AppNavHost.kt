@@ -15,10 +15,13 @@ import pe.upeu.andinasalud.presentation.solicitud.*
 fun AppNavHost(oscuro: Boolean, cambiarTema: (Boolean) -> Unit) {
     val pila = remember { mutableStateListOf<Destino>(Destino.Inicio) }
     val actual = pila.last()
-    fun volver() { if (pila.size > 1) pila.removeAt(pila.lastIndex) }
+    fun volver() {
+        if (pila.size > 1) pila.removeAt(pila.lastIndex)
+        else if (pila.last() != Destino.Inicio) { pila.clear(); pila.add(Destino.Inicio) }
+    }
     fun principal(destino: Destino) { pila.clear(); pila.add(destino) }
     fun abrir(destino: Destino) { pila.add(destino) }
-    PlatformBackHandler(pila.size > 1, ::volver)
+    PlatformBackHandler(pila.size > 1 || actual != Destino.Inicio, ::volver)
 
     val inicioVM: InicioViewModel = koinViewModel()
     val citasVM: CitasViewModel = koinViewModel()
@@ -60,7 +63,7 @@ fun AppNavHost(oscuro: Boolean, cambiarTema: (Boolean) -> Unit) {
                 Destino.Perfil -> PerfilScreen(perfil, perfilVM::cargar, oscuro, cambiarTema)
                 is Destino.Detalle -> DetalleCitaScreen(detalle, ::volver, { detalleVM.cargar(actual.id) },
                     { detalleVM.cancelar(actual.id) })
-                Destino.Solicitud -> SolicitudScreen(solicitud, { volver(); citasVM.cargar(); inicioVM.cargar() },
+                Destino.Solicitud -> SolicitudScreen(solicitud, ::volver, { principal(Destino.Citas) },
                     solicitudVM::cargar, solicitudVM::especialidad, solicitudVM::sede, solicitudVM::fecha,
                     solicitudVM::hora, solicitudVM::motivo, solicitudVM::enviar)
             }
